@@ -1,4 +1,40 @@
 services:
+  web:
+    build: .
+    container_name: myproject-web
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: dev
+    container_name: myproject-frontend
+    restart: unless-stopped
+    environment:
+      API_BASE: http://web:8000
+      NEXT_PUBLIC_API_BASE: http://localhost:8000
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - web
+
   db:
     image: postgres:16
     container_name: myproject-postgres
@@ -26,3 +62,4 @@ services:
 
 volumes:
   postgres_data:
+  web_node_modules:

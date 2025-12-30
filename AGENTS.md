@@ -1,35 +1,35 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `RestApi/` contains Django project configuration (settings, urls, wsgi/asgi).
-- `expenses/` is the expenses domain app (models, serializers, views, urls, migrations).
-- `rests/` is the simple Item API app.
-- `templates/` stores Django templates used by the project.
-- `manage.py` is the entry point for Django management commands.
-- `docker-compose.yml` and `.env` define Postgres/pgAdmin configuration.
+- `RestApi/` holds Django settings, urls, wsgi/asgi.
+- `expenses/` and `rests/` hold API apps (models, serializers, views, urls, migrations).
+- `templates/` stores Django templates.
+- `web/` is the Next.js frontend (app router, components, lib).
+- `manage.py`, `docker-compose.yml`, and `.env` drive runtime setup.
 
 ## Build, Test, and Development Commands
-- `python manage.py runserver` starts the local development server.
-- `python manage.py makemigrations` and `python manage.py migrate` generate and apply schema changes.
-- `python manage.py createsuperuser` creates an admin user for the Django admin UI.
-- `python manage.py test` runs the Django test suite.
-- `docker compose up -d` starts Postgres and pgAdmin using values from `.env`.
+- `python manage.py runserver`, `migrate`, `makemigrations`, `test`, `seed_data`.
+- `docker compose up -d --build` runs API + frontend + db + pgAdmin.
+- `docker compose up -d db pgadmin` runs only the database tools.
+- `npm --prefix web run dev|build|start|lint` for the frontend.
+- `Makefile` wraps common shortcuts (`make docker-up-build`, `make web-dev`).
+
+## Local Setup & Running
+- Set `.env` for `DB_*` and `PGADMIN_*`; set `web/.env.local` for `API_BASE` and `NEXT_PUBLIC_API_BASE`.
+- Docker-first: `make docker-up-build`, then `docker compose exec web python manage.py migrate`.
+- Host Python: `make docker-db`, then `make migrate`, `make run`.
 
 ## Coding Style & Naming Conventions
-- Use 4-space indentation and follow PEP 8 where practical.
-- Django models use `PascalCase`; fields, functions, and modules use `snake_case`.
-- REST endpoints are function-based views in `expenses/views.py` and `rests/views.py`; keep request/response shapes explicit.
-- Keep serializers in `*/serializers.py` and wire routes in `*/urls.py`.
+- Python: 4-space indentation, PEP 8, `PascalCase` models, `snake_case` fields.
+- Frontend: TypeScript; keep shared calls in `web/lib` and UI in `web/components`.
 
 ## Testing Guidelines
-- Use Django’s `TestCase` in `expenses/tests.py` and `rests/tests.py`.
-- Name tests `test_<behavior>` and cover serializers, filters, and API status codes.
-- Add regression tests for query parameters like `from`, `to`, and `category`.
+- Django: `python manage.py test` with tests in `expenses/tests.py` and `rests/tests.py`.
+- Frontend: `npm --prefix web run lint` before PRs.
 
 ## Configuration & Security
-- Settings load `.env` via `python-dotenv`; keep `DB_*` and `PGADMIN_*` values out of commits.
-- Database configuration defaults to Postgres in `RestApi/settings.py`; ensure your `.env` matches your local DB.
+- Keep secrets out of git; update `.env` and docker-compose together.
+- Docker uses `API_BASE=http://web:8000`; browsers use `NEXT_PUBLIC_API_BASE`.
 
 ## Commit & Pull Request Guidelines
-- No `.git` history is present in this directory; use clear, imperative commit messages (e.g., "Add expense summary endpoint").
-- PRs should include a short summary, testing notes (`python manage.py test`), and any API or schema changes.
+- Use clear, imperative commit messages; PRs include summary, testing notes, and API/schema changes.
